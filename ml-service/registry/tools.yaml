@@ -1,0 +1,36 @@
+# Tool registry: har tool, uske allowed input configuration aur parameters.
+# Controller sirf yahin listed parameters set kar sakta hai. Baaki reject honge.
+tools:
+  vqa:
+    input_config: [single]
+    needs_model: true
+    params:
+      max_new_tokens: {type: int, range: [8, 256], default: 128}
+      adapter: {type: str, choices: [none, bigearthnet, vrsbench], default: none}
+
+  grounding:
+    input_config: [single]
+    needs_model: true
+    params:
+      max_new_tokens: {type: int, range: [8, 128], default: 64}
+
+  change:
+    input_config: [bitemporal]
+    needs_model: false
+    params:
+      min_area_px: {type: int, range: [1, 100000], default: 50}
+
+  change_vqa:
+    input_config: [bitemporal]
+    needs_model: true
+    params:
+      max_new_tokens: {type: int, range: [8, 256], default: 128}
+      adapter: {type: str, choices: [none, cdvqa], default: none}
+
+  fusion:
+    input_config: [optical_sar]
+    needs_model: false
+    params:
+      water_ndwi_min: {type: float, range: [-1.0, 1.0], default: 0.0}
+      sar_water_db_max: {type: float, range: [-30.0, 0.0], default: -18.0}
+      sar_built_db_min: {type: float, range: [-30.0, 10.0], default: -8.0}
