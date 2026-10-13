@@ -1,0 +1,23 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Arial, sans-serif; color: #111; }
+.app { display: flex; height: 100vh; }
+.sidebar { width: 400px; padding: 16px; overflow-y: auto; border-right: 1px solid #ddd; }
+.sidebar h1 { font-size: 22px; margin: 0 0 12px; }
+.sidebar h3 { margin: 16px 0 6px; font-size: 15px; }
+.map { flex: 1; min-width: 0; }
+.field { margin-bottom: 12px; }
+.field label { display: block; font-weight: bold; margin-bottom: 4px; font-size: 14px; }
+textarea { width: 100%; font-family: inherit; padding: 6px; }
+button { width: 100%; padding: 9px; font-size: 15px; cursor: pointer; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+.status { font-size: 13px; color: #555; min-height: 18px; }
+.status.error { color: #b00020; }
+.status.done { color: #0a7d2c; }
+.card { border: 1px solid #e2e2e2; border-radius: 6px; padding: 10px 12px; margin-top: 12px; }
+.card p { margin: 6px 0; font-size: 14px; line-height: 1.45; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+td, th { border: 1px solid #ddd; padding: 4px; text-align: left; vertical-align: top; }
+pre { background: #f6f6f6; padding: 8px; font-size: 11px; overflow-x: auto; margin: 6px 0; }
+.legend { display: inline-block; width: 12px; height: 12px; background: rgba(255,0,0,0.7); margin-right: 6px; vertical-align: middle; }
+.ok { color: #0a7d2c; font-weight: bold; }
+.bad { color: #b00020; font-weight: bold; }

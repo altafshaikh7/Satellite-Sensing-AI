@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SatQuery AI</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  body { font-family: Arial, sans-serif; margin: 0; display: flex; height: 100vh; }
+  #side { width: 360px; padding: 16px; overflow: auto; border-right: 1px solid #ddd; box-sizing: border-box; }
+  #map { flex: 1; }
+  label { display: block; margin-top: 10px; font-weight: bold; }
+  input, textarea, button { width: 100%; margin-top: 4px; box-sizing: border-box; }
+  button { margin-top: 14px; padding: 8px; cursor: pointer; }
+  pre { background: #f5f5f5; padding: 8px; overflow: auto; font-size: 12px; }
+  .small { color: #666; font-size: 12px; }
+</style>
+</head>
+<body>
+<div id="side">
+  <h2>SatQuery AI</h2>
+  <label>Image 1 (earlier, GeoTIFF)</label>
+  <input type="file" id="f1" accept=".tif,.tiff">
+  <label>Image 2 (later, GeoTIFF)</label>
+  <input type="file" id="f2" accept=".tif,.tiff">
+  <label>Query</label>
+  <textarea id="q" rows="2">Where did the vegetation change?</textarea>
+  <button id="go">Analyze</button>
+  <p class="small" id="status"></p>
+  <div id="answer"></div>
+  <div id="stats"></div>
+  <p><a id="report" target="_blank"></a></p>
+  <div id="limits"></div>
+</div>
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const map = L.map("map").setView([0, 0], 2);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  attribution: "&copy; OpenStreetMap"
+}).addTo(map);
+let overlay = null;
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+document.getElementById("go").onclick = async () => {
+  const f1 = document.getElementById("f1").files[0];
+  const f2 = document.getElementById("f2").files[0];
+  const q = document.getElementById("q").value.trim();
+  const status = document.getElementById("status");
+  if (!f1 || !f2) { status.textContent = "Choose both images."; return; }
+
+  const fd = new FormData();
+  fd.append("query", q);
+  fd.append("images", f1);
+  fd.append("images", f2);
+  fd.append("modalities", "optical,optical");
+
+  status.textContent = "Running analysis (30-60 s for a full scene)...";
+  try {
+    const r = await fetch("/api/query", { method: "POST", body: fd });
+    const d = await r.json();
+    if (!r.ok) { status.textContent = "Error: " + JSON.stringify(d).slice(0, 300); return; }
+    status.textContent = "Done. Run " + d.run_id;
+
+    document.getElementById("answer").innerHTML = "<h3>Answer</h3><p>" + esc(d.answer) + "</p>";
+    document.getElementById("stats").innerHTML = "<pre>" + esc(JSON.stringify(d.evidence.stats, null, 2)) + "</pre>";
+    document.getElementById("limits").innerHTML =
+      "<h3>Limitations</h3><ul>" + d.limitations.map(x => "<li>" + esc(x) + "</li>").join("") + "</ul>";
+    const rep = document.getElementById("report");
+    rep.href = d.report_url; rep.textContent = "Open full HTML report";
+
+    if (overlay) map.removeLayer(overlay);
+    overlay = null;
+    const mk = d.evidence.masks.find(m => m.image_url);
+    if (mk) {
+      overlay = L.imageOverlay(mk.image_url, mk.bounds, { opacity: 0.8 }).addTo(map);
+      map.fitBounds(mk.bounds);
+    }
+    for (const m of d.evidence.masks) {
+      status.textContent += " | mask: " + m.name + " (GeoTIFF at " + m.url + ")";
+    }
+  } catch (e) {
+    status.textContent = "Request failed: " + e.message;
+  }
+};
+</script>
+</body>
+</html>
