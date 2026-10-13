@@ -1,5 +1,4 @@
 import { Router } from "express";
-import path from "path";
 import { upload } from "./upload.js";
 import { mlGet, mlPost } from "./mlClient.js";
 
@@ -13,11 +12,7 @@ function httpError(msg, status = 400) {
 
 function parseJSON(value, fallback) {
   if (value === undefined || value === "") return fallback;
-  try {
-    return JSON.parse(value);
-  } catch {
-    throw httpError(`invalid JSON in form field: ${value}`);
-  }
+  try { return JSON.parse(value); } catch { throw httpError(`invalid JSON in form field: ${value}`); }
 }
 
 function parseList(value) {
@@ -28,39 +23,27 @@ function parseList(value) {
   }
   return s.replace(/[\[\]"']/g, "").split(",").map((x) => x.trim()).filter(Boolean);
 }
+
 function filesFromRequest(req) {
   if (!req.files || req.files.length === 0) {
     throw httpError("upload 1 or 2 GeoTIFF files in the form field 'images'");
   }
   const modalities = parseList(req.body.modalities);
-  return req.files.map((f, i) => ({
-    path: path.resolve(f.path),
-    modality: modalities[i] || null,
-  }));
+  return req.files.map((f, i) => ({ path: f.path, modality: modalities[i] || null }));
 }
 
 router.get("/health", async (req, res, next) => {
-  try {
-    res.json({ gateway: "ok", ml: await mlGet("/health") });
-  } catch (e) {
-    next(e);
-  }
+  try { res.json({ gateway: "ok", ml: await mlGet("/health") }); } catch (e) { next(e); }
 });
 
 router.post("/validate", upload, async (req, res, next) => {
-  try {
-    const files = filesFromRequest(req);
-    res.json(await mlPost("/validate", { files }));
-  } catch (e) {
-    next(e);
-  }
+  try { res.json(await mlPost("/validate", { files: filesFromRequest(req) })); } catch (e) { next(e); }
 });
 
 router.post("/query", upload, async (req, res, next) => {
   try {
     const files = filesFromRequest(req);
     if (!req.body.query) throw httpError("form field 'query' is required");
-
     const body = {
       query: req.body.query,
       files,
@@ -70,11 +53,8 @@ router.post("/query", upload, async (req, res, next) => {
       tool_params: parseJSON(req.body.tool_params, {}),
     };
     for (const k of Object.keys(body)) if (body[k] === undefined) delete body[k];
-
     res.json(await mlPost("/analyze", body));
-  } catch (e) {
-    next(e);
-  }
+  } catch (e) { next(e); }
 });
 
 export default router;

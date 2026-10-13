@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import { PORT, UPLOAD_DIR, OUTPUTS_DIR } from "./config.js";
 import router from "./routes.js";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 const app = express();
@@ -13,12 +14,9 @@ app.use(cors());
 app.use(express.json());
 app.use("/api", router);
 app.use("/outputs", express.static(OUTPUTS_DIR));
-app.use(express.static(path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../public")));
+app.use(express.static(path.resolve(__dirname, "../public")));
 
 app.use((err, req, res, next) => {
-  if (err.response) {
-    return res.status(err.response.status).json(err.response.data);
-  }
   if (err.code === "ECONNREFUSED") {
     return res.status(503).json({ error: "ML service not reachable. Start uvicorn on ML_URL." });
   }

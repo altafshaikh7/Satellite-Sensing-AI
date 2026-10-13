@@ -3,27 +3,17 @@ Runs the tool plan from controller/router.py.
 Every call is validated against the registry, timed and logged.
 A tool that cannot run reports status 'unavailable' with the reason. No output is invented.
 """
-import os
 import time
-from pathlib import Path
 
 import numpy as np
 import rasterio
 
+from controller.vlm_tools import ToolUnavailable, tool_change_vqa, tool_vqa
 from registry.registry import ParamError, validate_params
 from tools import change, fusion
 from tools.stats import iou, pct
 
 SCALE = 10000.0
-_DEFAULT_VLM = Path(__file__).resolve().parents[2] / "weights" / "mini_internvl_base"
-
-
-class ToolUnavailable(RuntimeError):
-    """Raised when a tool cannot run in this environment. The reason is shown in the trace."""
-
-
-def vlm_path() -> Path:
-    return Path(os.getenv("VLM_PATH", str(_DEFAULT_VLM)))
 
 
 def read_reflectance(path: str, indices: dict[str, int], boa_offset: float) -> dict[str, np.ndarray]:
@@ -95,25 +85,16 @@ def tool_fusion(p: dict, ctx: dict) -> dict:
     }
 
 
-def _vlm_tool(name: str):
-    def run(p: dict, ctx: dict):
-        path = vlm_path()
-        if not path.exists():
-            raise ToolUnavailable(
-                f"{name}: base VLM weights not found at {path}. Download Mini-InternVL and set VLM_PATH."
-            )
-        raise ToolUnavailable(
-            f"{name}: VLM weights found, but inference is not connected in this version."
-        )
-    return run
+def tool_grounding(p: dict, ctx: dict) -> dict:
+    raise ToolUnavailable("grounding: not connected yet. Planned next with Mini-InternVL box output.")
 
 
 TOOLS = {
     "change": tool_change,
     "fusion": tool_fusion,
-    "vqa": _vlm_tool("vqa"),
-    "grounding": _vlm_tool("grounding"),
-    "change_vqa": _vlm_tool("change_vqa"),
+    "vqa": tool_vqa,
+    "grounding": tool_grounding,
+    "change_vqa": tool_change_vqa,
 }
 
 

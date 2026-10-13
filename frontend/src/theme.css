@@ -1,0 +1,38 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+:root {
+  --bg: #e6ebf1;
+  --surface: #e6ebf1;
+  --text: #1f2937;
+  --text-2: #475569;
+  --muted: #64748b;
+  --accent: #0b3d91;
+  --accent-ink: #ffffff;
+  --ok: #15803d;
+  --err: #b91c1c;
+  --run: #b45309;
+  --radius-lg: 14px;
+  --radius-md: 10px;
+  --shadow-out: 6px 6px 12px #c3c9d1, -6px -6px 12px #ffffff;
+  --shadow-in: inset 4px 4px 8px #c3c9d1, inset -4px -4px 8px #ffffff;
+  --shadow-sm: 3px 3px 6px #c3c9d1, -3px -3px 6px #ffffff;
+  --focus: 0 0 0 3px rgba(11, 61, 145, 0.35);
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { color: var(--text); margin: 0 0 8px; }
+p { margin: 6px 0; line-height: 1.5; }
+small, .muted { color: var(--muted); }
+code { font-size: 12px; }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}

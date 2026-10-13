@@ -46,7 +46,7 @@ def test_vlm_tool_reports_unavailable_without_weights(write_raster, monkeypatch,
     out = r.json()
     assert out["plan"] == ["vqa"]
     assert out["tools"][0]["status"] == "unavailable"
-    assert "weights not found" in out["answer"]
+    assert "Kaggle answer" in out["answer"]
 
 
 def test_rejected_param_is_logged_not_run(write_raster, monkeypatch, tmp_path):
